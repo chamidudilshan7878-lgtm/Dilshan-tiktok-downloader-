@@ -8,7 +8,7 @@ const MANIFEST_JSON = JSON.stringify({
   description: "Download TikTok Photos, Videos and MP3",
   icons: [
     {
-      src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000000' stroke='%23ffffff' stroke-width='6'/><text x='50' y='65' font-size='48' text-anchor='middle' fill='%23ffffff'>DL</text></svg>",
+      src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000000' stroke='%23d4d4d4' stroke-width='5'/><text x='50' y='65' font-size='48' text-anchor='middle' fill='%23e5e5e5'>DL</text></svg>",
       sizes: "192x192",
       type: "image/svg+xml"
     }
@@ -16,7 +16,7 @@ const MANIFEST_JSON = JSON.stringify({
 });
 
 const SW_JS = `
-const CACHE_NAME = "tiktok-dl-bw-v1";
+const CACHE_NAME = "tiktok-dl-bw-v2";
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
@@ -48,7 +48,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     body {
       min-height: 100vh;
       background: #000000;
-      color: #ffffff;
+      color: #e5e5e5;
       padding: 16px;
     }
 
@@ -60,9 +60,9 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .logout-btn {
-      background: #0a0a0a;
-      color: #ffffff;
-      border: 1px solid #333333;
+      background: #0c0c0c;
+      color: #d4d4d4;
+      border: 1px solid #2b2b2b;
       border-radius: 8px;
       padding: 6px 12px;
       font-size: 13px;
@@ -70,7 +70,8 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .logout-btn:hover {
-      border-color: #ffffff;
+      border-color: #737373;
+      color: #ffffff;
     }
 
     .container {
@@ -79,8 +80,8 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .card {
-      background: #090909;
-      border: 1px solid #262626;
+      background: #0b0b0b;
+      border: 1px solid #242424;
       border-radius: 16px;
       padding: 22px 18px;
     }
@@ -103,9 +104,9 @@ const HTML_PAGE = `<!DOCTYPE html>
       width: 28px;
       height: 28px;
       border-radius: 7px;
-      border: 1px solid #ffffff;
-      background: #000000;
-      color: #ffffff;
+      border: 1px solid #525252;
+      background: #050505;
+      color: #e5e5e5;
       display: grid;
       place-items: center;
       font-size: 13px;
@@ -113,15 +114,15 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .brand-title {
-      color: #ffffff;
+      color: #e5e5e5;
       font-weight: 700;
       font-size: 15px;
     }
 
     .install-btn {
-      background: #ffffff;
-      color: #000000;
-      border: 1px solid #ffffff;
+      background: #e5e5e5;
+      color: #0a0a0a;
+      border: 1px solid #d4d4d4;
       border-radius: 8px;
       padding: 7px 12px;
       font-size: 12px;
@@ -130,7 +131,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .install-btn:hover {
-      background: #e5e5e5;
+      background: #cccccc;
     }
 
     .hero-icon-box {
@@ -143,8 +144,8 @@ const HTML_PAGE = `<!DOCTYPE html>
       width: 84px;
       height: 84px;
       border-radius: 16px;
-      border: 1.5px solid #ffffff;
-      background: #000000;
+      border: 1.5px solid #525252;
+      background: #050505;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -154,13 +155,13 @@ const HTML_PAGE = `<!DOCTYPE html>
 
     .hero-icon .arrow {
       font-size: 24px;
-      color: #ffffff;
+      color: #e5e5e5;
       line-height: 1;
     }
 
     .hero-icon .badge-text {
-      background: #ffffff;
-      color: #000000;
+      background: #e5e5e5;
+      color: #0a0a0a;
       font-size: 9px;
       font-weight: 800;
       padding: 2px 7px;
@@ -172,7 +173,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       text-align: center;
       font-size: 22px;
       font-weight: 800;
-      color: #ffffff;
+      color: #ededed;
       letter-spacing: 0.5px;
       margin-bottom: 8px;
     }
@@ -180,7 +181,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     .sub-heading {
       text-align: center;
       font-size: 13px;
-      color: #b3b3b3;
+      color: #9e9e9e;
       line-height: 1.45;
       margin-bottom: 20px;
     }
@@ -195,31 +196,31 @@ const HTML_PAGE = `<!DOCTYPE html>
       width: 100%;
       padding: 13px 14px;
       border-radius: 10px;
-      border: 1px solid #333333;
-      background: #000000;
-      color: #ffffff;
+      border: 1px solid #2b2b2b;
+      background: #040404;
+      color: #e5e5e5;
       font-size: 14px;
       outline: none;
     }
 
     #tiktokUrl:focus {
-      border-color: #ffffff;
+      border-color: #737373;
     }
 
     .primary-btn {
       width: 100%;
       padding: 13px;
-      border: 1px solid #ffffff;
+      border: 1px solid #d4d4d4;
       border-radius: 10px;
-      background: #ffffff;
-      color: #000000;
+      background: #e5e5e5;
+      color: #0a0a0a;
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
     }
 
     .primary-btn:hover {
-      background: #e5e5e5;
+      background: #cccccc;
     }
 
     .primary-btn:disabled {
@@ -231,7 +232,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       text-align: center;
       margin-top: 14px;
       font-size: 13px;
-      color: #e5e5e5;
+      color: #bdbdbd;
       line-height: 1.45;
     }
 
@@ -244,7 +245,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       max-height: 360px;
       object-fit: cover;
       border-radius: 12px;
-      border: 1px solid #262626;
+      border: 1px solid #242424;
       margin-bottom: 12px;
     }
 
@@ -256,8 +257,8 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .photo-item {
-      background: #000000;
-      border: 1px solid #262626;
+      background: #050505;
+      border: 1px solid #242424;
       border-radius: 10px;
       padding: 6px;
       display: flex;
@@ -275,18 +276,22 @@ const HTML_PAGE = `<!DOCTYPE html>
     .photo-dl-btn {
       width: 100%;
       padding: 7px;
-      border: 1px solid #ffffff;
+      border: 1px solid #d4d4d4;
       border-radius: 7px;
-      background: #ffffff;
-      color: #000000;
+      background: #e5e5e5;
+      color: #0a0a0a;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
 
+    .photo-dl-btn:hover {
+      background: #cccccc;
+    }
+
     .caption {
       font-size: 13px;
-      color: #cccccc;
+      color: #bdbdbd;
       margin-bottom: 14px;
       word-break: break-word;
     }
@@ -300,32 +305,38 @@ const HTML_PAGE = `<!DOCTYPE html>
     .dl-btn {
       width: 100%;
       padding: 12px;
-      border: 1px solid #ffffff;
+      border: 1px solid #404040;
       border-radius: 10px;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
     }
 
-    .btn-white {
-      background: #ffffff;
-      color: #000000;
+    .btn-light {
+      background: #e5e5e5;
+      color: #0a0a0a;
+      border-color: #d4d4d4;
+    }
+
+    .btn-light:hover {
+      background: #cccccc;
     }
 
     .btn-dark {
-      background: #000000;
-      color: #ffffff;
+      background: #121212;
+      color: #e5e5e5;
     }
 
     .btn-dark:hover {
-      background: #1a1a1a;
+      background: #1e1e1e;
+      border-color: #737373;
     }
 
     .footer {
       margin-top: 22px;
       text-align: center;
       font-size: 12px;
-      color: #888888;
+      color: #7a7a7a;
     }
 
     .hidden {
@@ -411,7 +422,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       } else {
         statusMsg.classList.remove("hidden");
         statusMsg.textContent =
-          "Browser menu (⋮) එකෙන් 'Install app' හෝ 'Add to Home screen' තෝරන්න.";
+          "Open browser menu (⋮) and tap 'Install app' or 'Add to Home screen'.";
       }
     });
 
@@ -477,11 +488,11 @@ const HTML_PAGE = `<!DOCTYPE html>
         try {
           data = JSON.parse(rawText);
         } catch (_) {
-          throw new Error("Server එකෙන් හරි response එකක් ආවේ නැහැ. නැවත උත්සාහ කරන්න.");
+          throw new Error("Invalid response from server. Please try again.");
         }
 
         if (!res.ok || !data || !data.success) {
-          throw new Error((data && data.error) || "Link එකෙන් media ලබාගත නොහැකි විය.");
+          throw new Error((data && data.error) || "Unable to fetch media from this link.");
         }
 
         statusMsg.classList.add("hidden");
@@ -512,7 +523,7 @@ const HTML_PAGE = `<!DOCTYPE html>
             photoGallery.appendChild(item);
           });
 
-          addActionButton("Download All Photos (" + data.images.length + ")", "btn-white", () => {
+          addActionButton("Download All Photos (" + data.images.length + ")", "btn-light", () => {
             data.images.forEach((imgUrl, idx) => {
               setTimeout(() => {
                 triggerDownload(imgUrl, "tiktok-photo-" + (idx + 1) + ".jpg");
@@ -525,7 +536,7 @@ const HTML_PAGE = `<!DOCTYPE html>
         }
 
         if (data.downloads && data.downloads.hdVideo) {
-          addActionButton("Download 1080p Full HD (No Watermark)", "btn-white", () => {
+          addActionButton("Download 1080p Full HD (No Watermark)", "btn-light", () => {
             triggerDownload(data.downloads.hdVideo, "tiktok-1080p-no-watermark.mp4");
           });
         }
@@ -548,7 +559,7 @@ const HTML_PAGE = `<!DOCTYPE html>
           });
         }
       } catch (err) {
-        statusMsg.textContent = err.message || "දෝෂයක් ඇති විය.";
+        statusMsg.textContent = err.message || "Something went wrong.";
         statusMsg.classList.remove("hidden");
       } finally {
         submitBtn.disabled = false;
@@ -558,28 +569,48 @@ const HTML_PAGE = `<!DOCTYPE html>
 </body>
 </html>`;
 
-async function fetchTikTokInfo(tiktokUrl) {
-  const endpoints = [
-    "https://www.tikwm.com/api/?url=" + encodeURIComponent(tiktokUrl) + "&hd=1",
-    "https://tikwm.com/api/?url=" + encodeURIComponent(tiktokUrl) + "&hd=1"
-  ];
-
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(endpoint, {
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-          "Accept": "application/json, text/plain, */*"
-        }
-      });
-      const text = await res.text();
-      if (!text) continue;
-      const json = JSON.parse(text);
-      if (json && json.code === 0 && json.data) {
-        return json.data;
+async function resolveShortUrl(rawUrl) {
+  try {
+    const res = await fetch(rawUrl, {
+      method: "GET",
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
       }
-    } catch (_) {
-      // Try next endpoint
+    });
+    return res.url || rawUrl;
+  } catch (_) {
+    return rawUrl;
+  }
+}
+
+async function fetchTikTokInfo(tiktokUrl) {
+  const expandedUrl = await resolveShortUrl(tiktokUrl);
+  const candidates = [expandedUrl, tiktokUrl];
+
+  for (const targetUrl of candidates) {
+    const endpoints = [
+      "https://www.tikwm.com/api/?url=" + encodeURIComponent(targetUrl) + "&hd=1",
+      "https://tikwm.com/api/?url=" + encodeURIComponent(targetUrl) + "&hd=1"
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          headers: {
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json, text/plain, */*"
+          }
+        });
+        const text = await res.text();
+        if (!text) continue;
+        const json = JSON.parse(text);
+        if (json && json.code === 0 && json.data) {
+          return json.data;
+        }
+      } catch (_) {
+        // Try next endpoint
+      }
     }
   }
   return null;
@@ -614,7 +645,7 @@ export default {
         const tiktokUrl = (body.url || "").trim();
         if (!tiktokUrl || !tiktokUrl.includes("tiktok.com")) {
           return Response.json(
-            { error: "කරුණාකර වලංගු TikTok link එකක් ඇතුළත් කරන්න." },
+            { error: "Please enter a valid TikTok URL." },
             { status: 400 }
           );
         }
@@ -622,7 +653,7 @@ export default {
         const info = await fetchTikTokInfo(tiktokUrl);
         if (!info) {
           return Response.json(
-            { error: "Link එකෙන් media තොරතුරු ලබාගත නොහැකි විය. වෙනත් link එකක් උත්සාහ කරන්න." },
+            { error: "Unable to fetch media from this link. Please try another link." },
             { status: 404 }
           );
         }
@@ -644,7 +675,7 @@ export default {
         });
       } catch (err) {
         return Response.json(
-          { error: "Server එකේ දෝෂයක් ඇති විය. නැවත උත්සාහ කරන්න." },
+          { error: "Server error occurred. Please try again." },
           { status: 500 }
         );
       }
