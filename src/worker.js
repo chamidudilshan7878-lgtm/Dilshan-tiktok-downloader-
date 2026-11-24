@@ -16,7 +16,7 @@ const MANIFEST_JSON = JSON.stringify({
 });
 
 const SW_JS = `
-const CACHE_NAME = "tiktok-dl-bw-v3";
+const CACHE_NAME = "tiktok-dl-bw-v4";
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
@@ -461,6 +461,90 @@ const HTML_PAGE = `<!DOCTYPE html>
       actionButtons.appendChild(btn);
     }
 
+    function renderResult(data) {
+      statusMsg.classList.add("hidden");
+      resultArea.classList.remove("hidden");
+      mediaCaption.textContent = data.title || "TikTok Media";
+
+      if (data.type === "photo" && Array.isArray(data.images) && data.images.length > 0) {
+        photoGallery.classList.remove("hidden");
+
+        data.images.forEach((imgUrl, index) => {
+          const item = document.createElement("div");
+          item.className = "photo-item";
+
+          const img = document.createElement("img");
+          img.src = imgUrl;
+          img.alt = "TikTok Photo " + (index + 1);
+
+          const dlBtn = document.createElement("button");
+          dlBtn.type = "button";
+          dlBtn.className = "photo-dl-btn";
+          dlBtn.textContent = "Download Photo " + (index + 1);
+          dlBtn.addEventListener("click", () => {
+            triggerDownload(imgUrl, "tiktok-photo-" + (index + 1) + ".jpg");
+          });
+
+          item.appendChild(img);
+          item.appendChild(dlBtn);
+          photoGallery.appendChild(item);
+        });
+
+        addActionButton("Download All Photos (" + data.images.length + ")", "btn-light", () => {
+          data.images.forEach((imgUrl, idx) => {
+            setTimeout(() => {
+              triggerDownload(imgUrl, "tiktok-photo-" + (idx + 1) + ".jpg");
+            }, idx * 450);
+          });
+        });
+      } else if (data.cover) {
+        previewCover.src = data.cover;
+        previewCover.classList.remove("hidden");
+      }
+
+      if (data.downloads && data.downloads.hdVideo) {
+        addActionButton("Download 1080p Full HD (No Watermark)", "btn-light", () => {
+          triggerDownload(data.downloads.hdVideo, "tiktok-1080p-no-watermark.mp4");
+        });
+      }
+
+      if (data.downloads && data.downloads.sdVideo) {
+        addActionButton("Download 720p HD (No Watermark)", "btn-dark", () => {
+          triggerDownload(data.downloads.sdVideo, "tiktok-720p-no-watermark.mp4");
+        });
+      }
+
+      if (data.downloads && data.downloads.watermarkVideo) {
+        addActionButton("Download Watermark Video", "btn-dark", () => {
+          triggerDownload(data.downloads.watermarkVideo, "tiktok-watermark.mp4");
+        });
+      }
+
+      if (data.downloads && data.downloads.audio) {
+        addActionButton("Download Audio (MP3)", "btn-dark", () => {
+          triggerDownload(data.downloads.audio, "tiktok-audio.mp3");
+        });
+      }
+    }
+
+    function mapTikWMData(d) {
+      const images = Array.isArray(d.images) ? d.images.filter(Boolean) : [];
+      const isPhotoPost = images.length > 0;
+      return {
+        success: true,
+        type: isPhotoPost ? "photo" : "video",
+        title: d.title || "TikTok Media",
+        cover: d.cover || (isPhotoPost ? images[0] : ""),
+        images,
+        downloads: {
+          hdVideo: d.hdplay || d.play || null,
+          sdVideo: d.play || null,
+          watermarkVideo: d.wmplay || null,
+          audio: d.music || null
+        }
+      };
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const url = urlInput.value.trim();
@@ -477,6 +561,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       statusMsg.classList.remove("hidden");
 
       try {
+        // 1) Try Worker API first
         const res = await fetch("/api/fetch", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -488,76 +573,25 @@ const HTML_PAGE = `<!DOCTYPE html>
         try {
           data = JSON.parse(rawText);
         } catch (_) {
-          throw new Error("Invalid response from server. Please try again.");
+          data = null;
         }
 
-        if (!res.ok || !data || !data.success) {
-          throw new Error((data && data.error) || "Unable to fetch media from this link.");
+        if (res.ok && data && data.success) {
+          renderResult(data);
+          return;
         }
 
-        statusMsg.classList.add("hidden");
-        resultArea.classList.remove("hidden");
-        mediaCaption.textContent = data.title || "";
-
-        if (data.type === "photo" && Array.isArray(data.images) && data.images.length > 0) {
-          photoGallery.classList.remove("hidden");
-
-          data.images.forEach((imgUrl, index) => {
-            const item = document.createElement("div");
-            item.className = "photo-item";
-
-            const img = document.createElement("img");
-            img.src = imgUrl;
-            img.alt = "TikTok Photo " + (index + 1);
-
-            const dlBtn = document.createElement("button");
-            dlBtn.type = "button";
-            dlBtn.className = "photo-dl-btn";
-            dlBtn.textContent = "Download Photo " + (index + 1);
-            dlBtn.addEventListener("click", () => {
-              triggerDownload(imgUrl, "tiktok-photo-" + (index + 1) + ".jpg");
-            });
-
-            item.appendChild(img);
-            item.appendChild(dlBtn);
-            photoGallery.appendChild(item);
-          });
-
-          addActionButton("Download All Photos (" + data.images.length + ")", "btn-light", () => {
-            data.images.forEach((imgUrl, idx) => {
-              setTimeout(() => {
-                triggerDownload(imgUrl, "tiktok-photo-" + (idx + 1) + ".jpg");
-              }, idx * 450);
-            });
-          });
-        } else if (data.cover) {
-          previewCover.src = data.cover;
-          previewCover.classList.remove("hidden");
+        // 2) Fallback directly to TikWM API (same method used in Dilshan All In One)
+        const directRes = await fetch(
+          "https://www.tikwm.com/api/?url=" + encodeURIComponent(url) + "&hd=1"
+        );
+        const directJson = await directRes.json();
+        if (directJson && directJson.code === 0 && directJson.data) {
+          renderResult(mapTikWMData(directJson.data));
+          return;
         }
 
-        if (data.downloads && data.downloads.hdVideo) {
-          addActionButton("Download 1080p Full HD (No Watermark)", "btn-light", () => {
-            triggerDownload(data.downloads.hdVideo, "tiktok-1080p-no-watermark.mp4");
-          });
-        }
-
-        if (data.downloads && data.downloads.sdVideo) {
-          addActionButton("Download 720p HD (No Watermark)", "btn-dark", () => {
-            triggerDownload(data.downloads.sdVideo, "tiktok-720p-no-watermark.mp4");
-          });
-        }
-
-        if (data.downloads && data.downloads.watermarkVideo) {
-          addActionButton("Download Watermark Video", "btn-dark", () => {
-            triggerDownload(data.downloads.watermarkVideo, "tiktok-watermark.mp4");
-          });
-        }
-
-        if (data.downloads && data.downloads.audio) {
-          addActionButton("Download Audio (MP3)", "btn-dark", () => {
-            triggerDownload(data.downloads.audio, "tiktok-audio.mp3");
-          });
-        }
+        throw new Error((data && data.error) || "Unable to fetch media from this link.");
       } catch (err) {
         statusMsg.textContent = err.message || "Something went wrong.";
         statusMsg.classList.remove("hidden");
@@ -585,14 +619,14 @@ async function resolveShortUrl(rawUrl) {
   }
 }
 
-function normalizeResult(raw, fallbackTitle = "TikTok Media") {
-  if (!raw) return null;
-  const images = Array.isArray(raw.images) ? raw.images.filter(Boolean) : [];
+function normalizeTikWM(d) {
+  if (!d) return null;
+  const images = Array.isArray(d.images) ? d.images.filter(Boolean) : [];
   const isPhotoPost = images.length > 0;
-  const hdVideo = raw.hdVideo || null;
-  const sdVideo = raw.sdVideo || null;
-  const watermarkVideo = raw.watermarkVideo || null;
-  const audio = raw.audio || null;
+  const hdVideo = d.hdplay || d.play || null;
+  const sdVideo = d.play || null;
+  const watermarkVideo = d.wmplay || null;
+  const audio = d.music || null;
 
   if (!isPhotoPost && !hdVideo && !sdVideo && !watermarkVideo && !audio) {
     return null;
@@ -601,8 +635,8 @@ function normalizeResult(raw, fallbackTitle = "TikTok Media") {
   return {
     success: true,
     type: isPhotoPost ? "photo" : "video",
-    title: raw.title || fallbackTitle,
-    cover: raw.cover || (isPhotoPost ? images[0] : ""),
+    title: d.title || "TikTok Media",
+    cover: d.cover || (isPhotoPost ? images[0] : ""),
     images,
     downloads: {
       hdVideo,
@@ -613,148 +647,32 @@ function normalizeResult(raw, fallbackTitle = "TikTok Media") {
   };
 }
 
-async function tryTikWM(targetUrl) {
-  const hosts = ["https://www.tikwm.com", "https://tikwm.com"];
-  for (const host of hosts) {
-    try {
-      const res = await fetch(
-        `${host}/api/?url=${encodeURIComponent(targetUrl)}&hd=1`,
-        {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept": "application/json, text/plain, */*"
-          }
-        }
-      );
-      const text = await res.text();
-      if (!text) continue;
-      const json = JSON.parse(text);
-      if (json && json.code === 0 && json.data) {
-        const d = json.data;
-        const result = normalizeResult({
-          title: d.title,
-          cover: d.cover,
-          images: d.images,
-          hdVideo: d.hdplay || d.play,
-          sdVideo: d.play,
-          watermarkVideo: d.wmplay,
-          audio: d.music
-        });
-        if (result) return result;
-      }
-    } catch (_) {}
-  }
-  return null;
-}
-
-async function tryTiklyDown(targetUrl) {
-  try {
-    const res = await fetch(
-      `https://api.tiklydown.eu/api/download?url=${encodeURIComponent(targetUrl)}`,
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-          "Accept": "application/json, text/plain, */*"
-        }
-      }
-    );
-    const text = await res.text();
-    if (!text) return null;
-    const json = JSON.parse(text);
-    const d = json && (json.data || json.result || json);
-    if (!d) return null;
-
-    const images = Array.isArray(d.images)
-      ? d.images.map((item) => (typeof item === "string" ? item : item && item.url)).filter(Boolean)
-      : [];
-
-    const hdVideo =
-      (d.video && (d.video.noWatermark || d.video.no_watermark || d.video.hd)) ||
-      d.hdplay ||
-      d.play ||
-      null;
-    const sdVideo =
-      (d.video && (d.video.sd || d.video.url)) ||
-      d.play ||
-      hdVideo ||
-      null;
-    const watermarkVideo =
-      (d.video && (d.video.watermark || d.video.with_watermark)) ||
-      d.wmplay ||
-      null;
-    const audio =
-      (d.music && (d.music.play_url || d.music.url)) ||
-      d.music ||
-      null;
-
-    return normalizeResult({
-      title: d.title,
-      cover: d.cover || (images[0] || ""),
-      images,
-      hdVideo,
-      sdVideo,
-      watermarkVideo,
-      audio
-    });
-  } catch (_) {
-    return null;
-  }
-}
-
-async function tryDirectPageFallback(targetUrl) {
-  try {
-    const res = await fetch(targetUrl, {
-      redirect: "follow",
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
-      }
-    });
-    const html = await res.text();
-    if (!html) return null;
-
-    const ogTitle = (html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) || [])[1] || "";
-    const ogImage = (html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) || [])[1] || "";
-
-    if (ogTitle || ogImage) {
-      return {
-        success: true,
-        type: "video",
-        title: ogTitle || "TikTok Media",
-        cover: ogImage,
-        images: [],
-        downloads: {
-          hdVideo: null,
-          sdVideo: null,
-          watermarkVideo: null,
-          audio: null
-        }
-      };
-    }
-    return null;
-  } catch (_) {
-    return null;
-  }
-}
-
 async function fetchTikTokInfo(tiktokUrl) {
   const expandedUrl = await resolveShortUrl(tiktokUrl);
   const candidates = expandedUrl !== tiktokUrl ? [expandedUrl, tiktokUrl] : [tiktokUrl];
 
   for (const targetUrl of candidates) {
-    const tikwmRes = await tryTikWM(targetUrl);
-    if (tikwmRes) return tikwmRes;
-
-    const tiklyRes = await tryTiklyDown(targetUrl);
-    if (tiklyRes) return tiklyRes;
+    for (const host of ["https://www.tikwm.com", "https://tikwm.com"]) {
+      try {
+        const res = await fetch(
+          `${host}/api/?url=${encodeURIComponent(targetUrl)}&hd=1`,
+          {
+            headers: {
+              "User-Agent": "Mozilla/5.0",
+              "Accept": "application/json, text/plain, */*"
+            }
+          }
+        );
+        const text = await res.text();
+        if (!text) continue;
+        const json = JSON.parse(text);
+        if (json && json.code === 0 && json.data) {
+          const normalized = normalizeTikWM(json.data);
+          if (normalized) return normalized;
+        }
+      } catch (_) {}
+    }
   }
-
-  for (const targetUrl of candidates) {
-    const pageMeta = await tryDirectPageFallback(targetUrl);
-    if (pageMeta) return pageMeta;
-  }
-
   return null;
 }
 
@@ -796,23 +714,6 @@ export default {
         if (!result) {
           return Response.json(
             { error: "Unable to fetch media from this link. Please try another link." },
-            { status: 404 }
-          );
-        }
-
-        const hasAnyDownload =
-          result.images.length > 0 ||
-          result.downloads.hdVideo ||
-          result.downloads.sdVideo ||
-          result.downloads.watermarkVideo ||
-          result.downloads.audio;
-
-        if (!hasAnyDownload) {
-          return Response.json(
-            {
-              error:
-                "This TikTok link is protected or blocked on server requests. Try another public TikTok link."
-            },
             { status: 404 }
           );
         }
