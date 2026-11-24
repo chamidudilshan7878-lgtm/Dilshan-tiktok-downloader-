@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070b12" />
+  <title>TikTok DL - TikTok Downloader</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <button id="logoutBtn" class="logout-btn" type="button">🔒 Logout</button>
+  </div>
+
+  <main class="container">
+    <div class="card">
+      <div class="card-header">
+        <div class="brand-row">
+          <div class="mini-icon">⬇</div>
+          <span class="brand-title">TikTok DL</span>
+        </div>
+        <button id="installBtn" class="install-btn hidden" type="button">📲 Install App</button>
+      </div>
+
+      <div class="hero-icon-box">
+        <div class="hero-icon">
+          <span class="arrow">⬇</span>
+          <span class="badge-text">TIKTOK</span>
+        </div>
+      </div>
+
+      <h1 class="main-heading">TIKTOK DOWNLOADER</h1>
+      <p class="sub-heading">
+        Download TikTok Photos, Videos in 1080p, 720p &amp; MP3 Without Watermark
+      </p>
+
+      <form id="dlForm" class="form-box">
+        <input
+          id="tiktokUrl"
+          type="text"
+          placeholder="Paste TikTok Link Here..."
+          autocomplete="off"
+          required
+        />
+        <button id="submitBtn" class="primary-btn" type="submit">Download Now</button>
+      </form>
+
+      <div id="statusMsg" class="status-msg hidden"></div>
+
+      <div id="resultArea" class="result-area hidden">
+        <div id="photoGallery" class="photo-gallery hidden"></div>
+        <img id="previewCover" class="preview-cover hidden" alt="Preview" />
+        <p id="mediaCaption" class="caption"></p>
+
+        <div id="actionButtons" class="action-buttons"></div>
+      </div>
+
+      <footer class="footer">© Powered by Dilshan</footer>
+    </div>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
