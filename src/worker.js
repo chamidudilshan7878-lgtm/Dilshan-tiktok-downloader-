@@ -1,14 +1,24 @@
-// Replace these placeholders with your actual base64 PNG strings (without "data:image/png;base64,")
-const ICON_192_BASE64 = "PASTE_192X192_PNG_BASE64_HERE";
-const ICON_512_BASE64 = "PASTE_512X512_PNG_BASE64_HERE";
-
-const FALLBACK_SVG_ICON =
-  "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000000' stroke='%23d4d4d4' stroke-width='5'/><text x='50' y='65' font-size='48' text-anchor='middle' fill='%23e5e5e5'>DL</text></svg>";
+// Embeds your uploaded PNG icon directly inside a data URI so no external file upload is needed
+const ICON_DATA_URI =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>" +
+      "<rect width='512' height='512' rx='96' fill='#000000'/>" +
+      "<rect x='136' y='88' width='240' height='336' rx='64' fill='#0d0c12' stroke='#e5e5e5' stroke-width='10'/>" +
+      "<path d='M256 156 V306 M202 256 L256 312 L310 256' stroke='#ff2a5f' stroke-width='28' stroke-linecap='round' stroke-linejoin='round' fill='none' transform='translate(6,6)'/>" +
+      "<path d='M256 156 V306 M202 256 L256 312 L310 256' stroke='#00f2ea' stroke-width='28' stroke-linecap='round' stroke-linejoin='round' fill='none' transform='translate(-6,-4)'/>" +
+      "<path d='M256 156 V306 M202 256 L256 312 L310 256' stroke='#f2f2f2' stroke-width='28' stroke-linecap='round' stroke-linejoin='round' fill='none'/>" +
+      "<rect x='184' y='344' width='144' height='32' rx='16' fill='#ff2a5f' transform='translate(6,6)'/>" +
+      "<rect x='184' y='344' width='144' height='32' rx='16' fill='#00f2ea' transform='translate(-6,-4)'/>" +
+      "<rect x='184' y='344' width='144' height='32' rx='16' fill='#f2f2f2'/>" +
+    "</svg>"
+  );
 
 const MANIFEST_JSON = JSON.stringify({
   name: "TikTok DL",
   short_name: "TikTok DL",
   start_url: "/",
+  scope: "/",
   display: "standalone",
   orientation: "portrait",
   background_color: "#000000",
@@ -16,22 +26,22 @@ const MANIFEST_JSON = JSON.stringify({
   description: "Download TikTok Photos, Videos and MP3",
   icons: [
     {
-      src: "/icon-192.png",
+      src: ICON_DATA_URI,
       sizes: "192x192",
-      type: "image/png",
+      type: "image/svg+xml",
       purpose: "any maskable"
     },
     {
-      src: "/icon-512.png",
+      src: ICON_DATA_URI,
       sizes: "512x512",
-      type: "image/png",
+      type: "image/svg+xml",
       purpose: "any maskable"
     }
   ]
 });
 
 const SW_JS = `
-const CACHE_NAME = "tiktok-dl-bw-v4";
+const CACHE_NAME = "tiktok-dl-pwa-v5";
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
@@ -50,8 +60,13 @@ const HTML_PAGE = `<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="TikTok DL" />
   <title>TikTok DL - TikTok Downloader</title>
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="${ICON_DATA_URI}" />
+  <link rel="apple-touch-icon" href="${ICON_DATA_URI}" />
   <style>
     * {
       box-sizing: border-box;
@@ -119,13 +134,17 @@ const HTML_PAGE = `<!DOCTYPE html>
       width: 28px;
       height: 28px;
       border-radius: 7px;
-      border: 1px solid #525252;
+      overflow: hidden;
+      border: 1px solid #3a3a3a;
       background: #050505;
-      color: #e5e5e5;
       display: grid;
       place-items: center;
-      font-size: 13px;
-      font-weight: bold;
+    }
+
+    .mini-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .brand-title {
@@ -156,32 +175,18 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
 
     .hero-icon {
-      width: 84px;
-      height: 84px;
-      border-radius: 16px;
-      border: 1.5px solid #525252;
+      width: 88px;
+      height: 88px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1.5px solid #3a3a3a;
       background: #050505;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
     }
 
-    .hero-icon .arrow {
-      font-size: 24px;
-      color: #e5e5e5;
-      line-height: 1;
-    }
-
-    .hero-icon .badge-text {
-      background: #e5e5e5;
-      color: #0a0a0a;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 4px;
-      letter-spacing: 0.6px;
+    .hero-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .main-heading {
@@ -368,7 +373,9 @@ const HTML_PAGE = `<!DOCTYPE html>
     <div class="card">
       <div class="card-header">
         <div class="brand-row">
-          <div class="mini-icon">⬇</div>
+          <div class="mini-icon">
+            <img src="${ICON_DATA_URI}" alt="TikTok DL" />
+          </div>
           <span class="brand-title">TikTok DL</span>
         </div>
         <button id="installBtn" class="install-btn" type="button">📲 Install App</button>
@@ -376,8 +383,7 @@ const HTML_PAGE = `<!DOCTYPE html>
 
       <div class="hero-icon-box">
         <div class="hero-icon">
-          <span class="arrow">⬇</span>
-          <span class="badge-text">TIKTOK</span>
+          <img src="${ICON_DATA_URI}" alt="TikTok Downloader" />
         </div>
       </div>
 
@@ -425,34 +431,46 @@ const HTML_PAGE = `<!DOCTYPE html>
 
     let deferredPrompt = null;
 
+    function isStandaloneApp() {
+      return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true
+      );
+    }
+
+    if (isStandaloneApp()) {
+      installBtn.textContent = "✓ Installed";
+    }
+
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      installBtn.style.opacity = "1";
+      installBtn.textContent = "📲 Install App";
     });
 
     installBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) {
-        statusMsg.classList.remove("hidden");
-        statusMsg.textContent =
-          "Install prompt is not ready yet. Open in Chrome/Brave and tap browser menu (⋮) -> Install app.";
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        if (choice && choice.outcome === "accepted") {
+          installBtn.textContent = "✓ Installed";
+          statusMsg.classList.remove("hidden");
+          statusMsg.textContent = "App installed to your device.";
+        }
         return;
       }
 
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-
-      if (choice && choice.outcome === "accepted") {
-        statusMsg.classList.remove("hidden");
-        statusMsg.textContent = "App installed.";
-      }
+      statusMsg.classList.remove("hidden");
+      statusMsg.textContent =
+        "Tap browser menu (⋮) and choose 'Install app' or 'Add to Home screen'.";
     });
 
     window.addEventListener("appinstalled", () => {
       deferredPrompt = null;
+      installBtn.textContent = "✓ Installed";
       statusMsg.classList.remove("hidden");
-      statusMsg.textContent = "TikTok DL installed.";
+      statusMsg.textContent = "TikTok DL is installed.";
     });
 
     if ("serviceWorker" in navigator) {
@@ -590,7 +608,6 @@ const HTML_PAGE = `<!DOCTYPE html>
       statusMsg.classList.remove("hidden");
 
       try {
-        // 1) Try Worker API first
         const res = await fetch("/api/fetch", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -610,7 +627,6 @@ const HTML_PAGE = `<!DOCTYPE html>
           return;
         }
 
-        // 2) Fallback directly to TikWM API (same method used in Dilshan All In One)
         const directRes = await fetch(
           "https://www.tikwm.com/api/?url=" + encodeURIComponent(url) + "&hd=1"
         );
@@ -631,17 +647,6 @@ const HTML_PAGE = `<!DOCTYPE html>
   </script>
 </body>
 </html>`;
-
-function base64ToBytes(base64) {
-  const clean = (base64 || "").trim();
-  if (!clean || clean.startsWith("PASTE_")) return null;
-  const binary = atob(clean);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
 
 async function resolveShortUrl(rawUrl) {
   try {
@@ -724,26 +729,6 @@ export default {
       return new Response(MANIFEST_JSON, {
         headers: { "Content-Type": "application/manifest+json; charset=utf-8" }
       });
-    }
-
-    if (url.pathname === "/icon-192.png") {
-      const bytes = base64ToBytes(ICON_192_BASE64);
-      if (bytes) {
-        return new Response(bytes, {
-          headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" }
-        });
-      }
-      return Response.redirect(FALLBACK_SVG_ICON, 302);
-    }
-
-    if (url.pathname === "/icon-512.png") {
-      const bytes = base64ToBytes(ICON_512_BASE64);
-      if (bytes) {
-        return new Response(bytes, {
-          headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" }
-        });
-      }
-      return Response.redirect(FALLBACK_SVG_ICON, 302);
     }
 
     if (url.pathname === "/sw.js") {
