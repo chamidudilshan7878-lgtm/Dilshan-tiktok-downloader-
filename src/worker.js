@@ -1,16 +1,31 @@
+// Replace these placeholders with your actual base64 PNG strings (without "data:image/png;base64,")
+const ICON_192_BASE64 = "PASTE_192X192_PNG_BASE64_HERE";
+const ICON_512_BASE64 = "PASTE_512X512_PNG_BASE64_HERE";
+
+const FALLBACK_SVG_ICON =
+  "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000000' stroke='%23d4d4d4' stroke-width='5'/><text x='50' y='65' font-size='48' text-anchor='middle' fill='%23e5e5e5'>DL</text></svg>";
+
 const MANIFEST_JSON = JSON.stringify({
   name: "TikTok DL",
   short_name: "TikTok DL",
   start_url: "/",
   display: "standalone",
+  orientation: "portrait",
   background_color: "#000000",
   theme_color: "#000000",
   description: "Download TikTok Photos, Videos and MP3",
   icons: [
     {
-      src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23000000' stroke='%23d4d4d4' stroke-width='5'/><text x='50' y='65' font-size='48' text-anchor='middle' fill='%23e5e5e5'>DL</text></svg>",
+      src: "/icon-192.png",
       sizes: "192x192",
-      type: "image/svg+xml"
+      type: "image/png",
+      purpose: "any maskable"
+    },
+    {
+      src: "/icon-512.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any maskable"
     }
   ]
 });
@@ -409,21 +424,35 @@ const HTML_PAGE = `<!DOCTYPE html>
     const logoutBtn = document.getElementById("logoutBtn");
 
     let deferredPrompt = null;
+
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
+      installBtn.style.opacity = "1";
     });
 
     installBtn.addEventListener("click", async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      } else {
+      if (!deferredPrompt) {
         statusMsg.classList.remove("hidden");
         statusMsg.textContent =
-          "Open browser menu (⋮) and tap 'Install app' or 'Add to Home screen'.";
+          "Install prompt is not ready yet. Open in Chrome/Brave and tap browser menu (⋮) -> Install app.";
+        return;
       }
+
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+
+      if (choice && choice.outcome === "accepted") {
+        statusMsg.classList.remove("hidden");
+        statusMsg.textContent = "App installed.";
+      }
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredPrompt = null;
+      statusMsg.classList.remove("hidden");
+      statusMsg.textContent = "TikTok DL installed.";
     });
 
     if ("serviceWorker" in navigator) {
@@ -603,6 +632,17 @@ const HTML_PAGE = `<!DOCTYPE html>
 </body>
 </html>`;
 
+function base64ToBytes(base64) {
+  const clean = (base64 || "").trim();
+  if (!clean || clean.startsWith("PASTE_")) return null;
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 async function resolveShortUrl(rawUrl) {
   try {
     const res = await fetch(rawUrl, {
@@ -684,6 +724,26 @@ export default {
       return new Response(MANIFEST_JSON, {
         headers: { "Content-Type": "application/manifest+json; charset=utf-8" }
       });
+    }
+
+    if (url.pathname === "/icon-192.png") {
+      const bytes = base64ToBytes(ICON_192_BASE64);
+      if (bytes) {
+        return new Response(bytes, {
+          headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" }
+        });
+      }
+      return Response.redirect(FALLBACK_SVG_ICON, 302);
+    }
+
+    if (url.pathname === "/icon-512.png") {
+      const bytes = base64ToBytes(ICON_512_BASE64);
+      if (bytes) {
+        return new Response(bytes, {
+          headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" }
+        });
+      }
+      return Response.redirect(FALLBACK_SVG_ICON, 302);
     }
 
     if (url.pathname === "/sw.js") {
